@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import BasicInfo from './components/BasicInfo';
 import TournamentCheck from './components/TournamentCheck';
 import FinalSubmission from './components/FinalSubmission';
-import Questionnaire from './components/Questionnaire';
+import Questionnaire from './components/Questionnaire'; 
 import './App.scss';
 
 function App() {
-  const [flow, setFlow] = useState(''); // 현재 흐름 (설문 or 티어 배정)
-  const [step, setStep] = useState(0);  // 티어 배정 흐름의 단계
-  const [surveyStep, setSurveyStep] = useState(0);  // 설문지 흐름의 단계
+  const [flow, setFlow] = useState('');
+  const [step, setStep] = useState(0);
+  const [surveyStep, setSurveyStep] = useState(0); 
 
   const tournamentCheckData = [
     {
@@ -50,100 +50,77 @@ function App() {
     }
   ];
 
-  // 설문 단계 증가 및 설문 완료 시 최종 제출 화면으로 이동
-  const nextSurveyStep = (answer) => {
-    if (surveyStep < surveyQuestions.length - 1) {
-      setSurveyStep(surveyStep + 1);
-    } else {
-      setFlow('finalSubmission');
-    }
-  };
-
-  // 설문 단계 감소
+  const nextSurveyStep = () => setSurveyStep(surveyStep + 1);
   const prevSurveyStep = () => {
-    if (surveyStep > 0) {
+    if (surveyStep === 0) {
+      setFlow(''); // 첫 번째 질문에서 이전 버튼을 눌렀을 때 flow 상태 초기화
+    } else {
       setSurveyStep(surveyStep - 1);
     }
   };
 
-  // 티어 배정 단계 증가 및 최종 제출 화면으로 이동
-  const nextStep = () => {
-    if (step < 2) {
-      setStep(step + 1);
-    } else {
-      setFlow('finalSubmission');
-    }
+  const renderSurvey = () => {
+    return (
+      <Questionnaire
+        question={surveyQuestions[surveyStep].question}
+        options={surveyQuestions[surveyStep].options}
+        onNext={nextSurveyStep}
+        onPrevious={prevSurveyStep}
+      />
+    );
   };
 
-  // 티어 배정 단계 감소
-  const prevStep = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    }
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
+
+  const resetFlow = () => {
+    setFlow('');
+    setStep(0);
+    setSurveyStep(0);
   };
 
-  // 설문지 컴포넌트 렌더링
-  const renderSurvey = () => (
-    <Questionnaire
-      question={surveyQuestions[surveyStep].question}
-      options={surveyQuestions[surveyStep].options}
-      onNext={nextSurveyStep}
-      onPrevious={prevSurveyStep}
-    />
-  );
-
-  // 티어 배정 흐름 렌더링
   const renderTierAssignment = () => {
     switch (step) {
       case 0:
-        return <BasicInfo onNext={nextStep} />;
+        return <BasicInfo onNext={nextStep} onPrevious={resetFlow} />;
       case 1:
         return <TournamentCheck data={tournamentCheckData} onNext={nextStep} onPrevious={prevStep} />;
       case 2:
         return <FinalSubmission onPrevious={prevStep} />;
       default:
-        return <BasicInfo onNext={nextStep} />;
+        return <BasicInfo onNext={nextStep} onPrevious={resetFlow} />;
     }
   };
 
-  // 전체 컨텐츠 렌더링 관리
   const renderContent = () => {
-    switch (flow) {
-      case 'survey':
-        return renderSurvey();
-      case 'tierAssignment':
-        return renderTierAssignment();
-      case 'finalSubmission':
-        return <FinalSubmission onPrevious={() => setFlow('tierAssignment')} />;
-      default:
-        return (
-          <div className="selection-page">
-            <h2>원하는 흐름을 선택하세요</h2>
-            <div className="option-buttons">
-              <button onClick={() => { setFlow('survey'); setSurveyStep(0); }}>
-                설문지 시작
-              </button>
-              <button onClick={() => { setFlow('tierAssignment'); setStep(0); }}>
-                예비티어 배정 시작
-              </button>
-            </div>
+    if (flow === 'survey') {
+      return renderSurvey();
+    } else if (flow === 'tierAssignment') {
+      return renderTierAssignment();
+    } else {
+      return (
+        <div className="selection-page">
+          <h2>원하는 흐름을 선택하세요</h2>
+          <div className="option-buttons">
+            <button onClick={() => { setFlow('survey'); setSurveyStep(0); }}>
+              설문지 시작
+            </button>
+            <button onClick={() => { setFlow('tierAssignment'); setStep(0); }}>
+              예비티어 배정 시작
+            </button>
           </div>
-        );
+        </div>
+      );
     }
   };
 
-  // 헤더 렌더링 관리
   const renderHeader = () => {
-    switch (flow) {
-      case 'survey':
-        return <h1>티어 배정 설문</h1>;
-      case 'tierAssignment':
-        return <h1>예비티어 배정</h1>;
-      case 'finalSubmission':
-        return <h1>최종 제출</h1>;
-      default:
-        return null;
+    if (flow === 'survey') {
+      return <h1>티어 배정 설문</h1>;
+    } else if (flow === 'tierAssignment') {
+      return <h1>예비티어 배정</h1>;
     }
+    return null;
   };
 
   return (

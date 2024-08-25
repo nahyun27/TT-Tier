@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BasicInfo = ({ onNext }) => {
+const BasicInfo = ({ onNext, onPrevious }) => {
   return (
     <div className="basic-info">
       <h2>기본 정보란</h2>
@@ -13,6 +13,9 @@ const BasicInfo = ({ onNext }) => {
         <input type="text" placeholder="연락처를 입력하세요" />
       </div>
       <div className="navigation-buttons">
+        <button className="prev-button" onClick={onPrevious}>
+          이전
+        </button>
         <button onClick={onNext}>
           다음
         </button>
