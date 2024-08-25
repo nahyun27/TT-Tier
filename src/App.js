@@ -60,6 +60,10 @@ function App() {
   };
 
   const renderSurvey = () => {
+    if (surveyStep >= surveyQuestions.length) {
+      return <FinalSubmission onPrevious={() => setSurveyStep(surveyQuestions.length - 1)} />;
+    }
+  
     return (
       <Questionnaire
         question={surveyQuestions[surveyStep].question}
@@ -69,6 +73,7 @@ function App() {
       />
     );
   };
+  
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
